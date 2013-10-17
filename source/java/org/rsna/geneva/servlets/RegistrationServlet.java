@@ -35,12 +35,14 @@ public class RegistrationServlet extends Servlet {
 	public void doPost(HttpRequest req, HttpResponse res) {
 
 		Configuration config = Configuration.getInstance();
+		String accessionNumber = config.getAccessionNumber();
 
 		//Log this event in the server's event log.
 		logEvent(req);
 
 		//Get the contents of the form as a Registration
 		Registration reg = new Registration(req, config);
+		reg.accessionNumber = accessionNumber;
 
 		//Build the result page.
 		res.write("<html><head>");
