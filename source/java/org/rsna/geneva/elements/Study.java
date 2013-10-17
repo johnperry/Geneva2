@@ -21,6 +21,7 @@ public class Study extends ConfigElement {
 	public String directory;
 	public File directoryFile;
 	public String systemID;
+	public String systemIDSecondaries;
 	public String date;
 	public String description;
 	public String bodyPartExamined;
@@ -45,6 +46,7 @@ public class Study extends ConfigElement {
 		super(el);
 		this.enabled = !el.getAttribute("enabled").trim().equals("no");
 		this.systemID = el.getAttribute("dcmsystemID").trim();
+		this.systemIDSecondaries = el.getAttribute("dcmsystemIDSecondaries").trim();
 		this.directory = el.getAttribute("directory").trim();
 		this.directoryFile = new File(directory);
 		this.date = el.getAttribute("date").trim();
@@ -73,6 +75,7 @@ public class Study extends ConfigElement {
 		sb.append("<table border=\"0\" width=\"100%\">");
 		sb.append("<tr><td width=\"165\">enabled:</td><td>"+(enabled?"yes":"no")+"</td></tr>");
 		sb.append("<tr><td>DICOM System ID:</td><td>"+systemID+"</td></tr>");
+		sb.append("<tr><td>DICOM System ID Secondaries:</td><td>"+systemIDSecondaries+"</td></tr>");
 		sb.append("<tr><td>Directory:</td><td>"+directory+"</td></tr>");
 		sb.append("<tr><td>Number of files:</td>");
 		if (directoryFile.exists())
@@ -122,6 +125,7 @@ public class Study extends ConfigElement {
 
 			e.setAttribute("directory", directory);
 			e.setAttribute("dcmsystemID", systemID);
+			e.setAttribute("dcmsystemIDSecondaries", systemIDSecondaries);
 			e.setAttribute("date", date);
 			e.setAttribute("description", description);
 			e.setAttribute("bodyPartExamined", bodyPartExamined);

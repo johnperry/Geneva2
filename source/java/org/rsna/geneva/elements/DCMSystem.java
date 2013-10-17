@@ -38,9 +38,11 @@ public class DCMSystem extends EHRSystem {
 	public String repositoryID;
 	public String institutionName;
 	public String retrieveAET;
+	public String mirrorSystems;
 	public boolean acceptsRAD4;
 	public boolean acceptsRAD2;
 	public boolean acceptsRAD28;
+	public boolean acceptsExamComplete;
 	public boolean sendsKOS;
 
 	public DCMSystem(Element el) {
@@ -48,10 +50,12 @@ public class DCMSystem extends EHRSystem {
 		this.dcmURL = el.getAttribute("dcmURL").trim();
 		this.repositoryID = el.getAttribute("repositoryID").trim();
 		this.institutionName = el.getAttribute("institutionName").trim();
+		this.mirrorSystems = el.getAttribute("mirrorSystems").trim();
 		this.retrieveAET = el.getAttribute("retrieveAET").trim();
 		this.acceptsRAD4 = !el.getAttribute("acceptsRAD4").trim().equals("no");
 		this.acceptsRAD2 = !el.getAttribute("acceptsRAD2").trim().equals("no");
 		this.acceptsRAD28= !el.getAttribute("acceptsRAD28").trim().equals("no");
+		this.acceptsExamComplete= !el.getAttribute("acceptsExamComplete").trim().equals("no");
 		this.sendsKOS = !el.getAttribute("sendsKOS").trim().equals("no");
 	}
 
@@ -72,6 +76,9 @@ public class DCMSystem extends EHRSystem {
 		super.processRegistration(reg);
 		//Now process the Studies for this DCMSystem
 		Study[] studies = Configuration.getInstance().getStudies();
+		Configuration config = Configuration.getInstance();
+		//String accessionNumber = config.getAccessionNumber();
+		//String accessionNumber = reg.accessionNumber;
 		for (int i=0; i<studies.length; i++) {
 			if (studies[i].enabled && studies[i].systemID.equals(id)) {
 				processStudy(reg,studies[i]);
@@ -128,6 +135,8 @@ public class DCMSystem extends EHRSystem {
 				spsID, placerOrderNumber, fillerOrderNumber, modality);
 		sendRAD28(reg, study, studyInstanceUID, accessionNumber, rpID,
 				spsID, placerOrderNumber, fillerOrderNumber, modality);
+		sendToMirrors(reg, study, studyInstanceUID, accessionNumber, rpID,
+				spsID, placerOrderNumber, fillerOrderNumber, modality);
 
 		//Next, process the DICOM files.
 		String studyDate = study.date;
@@ -154,6 +163,7 @@ public class DCMSystem extends EHRSystem {
 					"; Failure: "+result.failure
 				);
 		config.getEventLog().append(event);
+		logger.error("Mirror systems: " + mirrorSystems);
 
 		//Finally, send the KOS
 		String metadataFolderName = new String(study.directoryFile.getAbsolutePath()) + "-metadata";
@@ -163,6 +173,38 @@ public class DCMSystem extends EHRSystem {
 			return;
 		}
 		sendKOS(metadataFolder, reg, studyDate, kos, study.id, reg.globalID, modality);
+
+	}
+
+	private void sendToMirrors(
+				Registration reg,
+				Study study,
+				String studyInstanceUID,
+				String accessionNumber,
+				String rpID,
+				String spsID,
+				String placerOrderNumber,
+				String fillerOrderNumber,
+				String modality) {
+	  Configuration config = Configuration.getInstance();
+	  DCMSystem[] mirrors = config.getDCMSystems(mirrorSystems);
+	  if (mirrors == null || mirrors.length == 0) {
+	    return;
+	  }
+	  int idx = 0;
+	  for (idx = 0; idx < mirrors.length; idx++) {
+	    if (mirrors[idx] == null) continue;
+
+	    logger.error("Mirror: " + mirrors[idx].id);
+	    mirrors[idx].sendRAD2(reg, study, studyInstanceUID, accessionNumber, rpID,
+				spsID, placerOrderNumber, fillerOrderNumber, modality);
+	    logger.error("About to send RAD4");
+	    mirrors[idx].sendRAD4(reg, study, studyInstanceUID, accessionNumber, rpID,
+				spsID, placerOrderNumber, fillerOrderNumber, modality);
+	    mirrors[idx].sendRAD28(reg, study, studyInstanceUID, accessionNumber, rpID,
+				spsID, placerOrderNumber, fillerOrderNumber, modality);
+	  }
+
 	}
 
 	private void sendRAD2(
@@ -296,6 +338,7 @@ public class DCMSystem extends EHRSystem {
 
 		Configuration config = Configuration.getInstance();
 		if (acceptsRAD4) {
+			logger.error("Accepts RAD 4");
 			HL7RAD4 orm = new HL7RAD4();
 			String dateTime = config.getDateTime();
 			String referringDoctor = config.getPhysicianName();
@@ -366,6 +409,8 @@ public class DCMSystem extends EHRSystem {
 						StringUtil.displayable(orm.toString()) +
 						"Response: "+StringUtil.displayable(response));
 			config.getEventLog().append(event);
+		} else {
+			logger.error("RAD 4: No");
 		}
 	}
 

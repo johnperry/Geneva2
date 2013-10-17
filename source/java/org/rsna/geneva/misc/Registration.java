@@ -31,6 +31,7 @@ public class Registration {
 	public String birthdate;
 	public String sex;
 	public String globalID;
+	public String accessionNumber;
 	public LinkedList<LocalID> localIDs;
 	public Hashtable<String,String> localIDTable;
 	public String localID; //for matching only

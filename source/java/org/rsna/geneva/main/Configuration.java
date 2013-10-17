@@ -47,7 +47,8 @@ public class Configuration {
 	//class, but for now, just accept it.
 	public String globalAssigningAuthority = "&amp;1.3.6.1.4.1.21367.13.20.1000&amp;ISO";
 	public String globalAssigningAuthorityOID =   "1.3.6.1.4.1.21367.13.20.1000";
-	public String localAssigningAuthority =  "&amp;1.3.6.1.4.1.21367.3000.1.6&amp;ISO";
+	// public String localAssigningAuthority =  "&amp;1.3.6.1.4.1.21367.3000.1.6&amp;ISO";
+	public String localAssigningAuthority =  "&amp;1.3.6.1.4.1.19376.2.840.1.1.1.1&amp;ISO";
 
 	//Indexes of configuration elements
 	Hashtable<String, ConfigElement> elementsTable;
@@ -368,6 +369,7 @@ public class Configuration {
 
 	//Create a new Accession Number.
 	public String getAccessionNumber() {
+		//return "IHE" + uidSubroot + "0";
 		return "IHE" + uidSubroot + accCount++;
 	}
 
@@ -488,6 +490,24 @@ public class Configuration {
 
 	public DCMSystem[] getDCMSystems() {
 		DCMSystem[] x = dcmsystemsTable.values().toArray( new DCMSystem[ dcmsystemsTable.size() ] );
+		Arrays.sort(x);
+		return x;
+	}
+
+	public DCMSystem[] getDCMSystems(String systemNames) {
+		if (systemNames == null || systemNames.equals("")) {
+		  return null;
+		}
+		String[] systemNamesArray = systemNames.split(":");
+		if (systemNamesArray.length == 0) {
+		  return null;
+		}
+		int idx = 0;
+		DCMSystem[] x = new DCMSystem[ systemNamesArray.length ];
+		for (idx = 0; idx < systemNamesArray.length; idx++) {
+		  String systemID = systemNamesArray[idx];
+		  x[idx] = dcmsystemsTable.get(systemID);
+		}
 		Arrays.sort(x);
 		return x;
 	}
@@ -953,9 +973,9 @@ public class Configuration {
 		int day = calendar.get(Calendar.DAY_OF_MONTH);
 		int hour = calendar.get(Calendar.HOUR_OF_DAY);
 		int min = calendar.get(Calendar.MINUTE);
-		/*int sec = calendar.get(Calendar.SECOND);*/
+		int sec = calendar.get(Calendar.SECOND);
  		return zero(year,4) + zero(month,2) + zero(day,2)
- 			 + zero(hour,2) + zero(min,2)/* + zero(sec,2)*/;
+ 			 + zero(hour,2) + zero(min,2) + zero(sec,2);
 	}
 
 	public synchronized String getDateTime(int deltaMinutes) {
@@ -966,9 +986,9 @@ public class Configuration {
 		int day = calendar.get(Calendar.DAY_OF_MONTH);
 		int hour = calendar.get(Calendar.HOUR_OF_DAY);
 		int min = calendar.get(Calendar.MINUTE);
-		/*int sec = calendar.get(Calendar.SECOND);*/
+		int sec = calendar.get(Calendar.SECOND);
  		return zero(year,4) + zero(month,2) + zero(day,2)
- 			 + zero(hour,2) + zero(min,2)/* + zero(sec,2)*/;
+ 			 + zero(hour,2) + zero(min,2) + zero(sec,2);
 	}
 
 	private String zero(int val, int len) {

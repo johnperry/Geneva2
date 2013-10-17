@@ -102,7 +102,8 @@ public class HL7RAD2 extends HL7Message {
 			orc.setField( 1,"NW");
 			orc.setField( 2,placerOrderNumber);
 			orc.setField( 3,fillerOrderNumber);
-			orc.setField( 5,"SC");
+//			orc.setField( 5,"SC");
+			orc.setField( 5,"CM");
 			orc.setField( 7,"1^once^^^^S");
 			orc.setField( 9,dateTime);
 			orc.setField(10,enteredBy);
